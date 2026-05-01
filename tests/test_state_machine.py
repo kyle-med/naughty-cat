@@ -127,6 +127,23 @@ def test_manual_summon_from_working(qtbot):
     qtbot.waitUntil(lambda: sm.current_state == State.CAT_SHOW, timeout=500)
 
 
+def test_manual_summon_from_hiding(qtbot):
+    """Bug fix: manual summon should work even after dismissing cats."""
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.CAT_HIDING)
+    sm.transition(Event.MANUAL_SUMMON)
+    qtbot.waitUntil(lambda: sm.current_state == State.CAT_SHOW, timeout=500)
+
+
+def test_manual_summon_from_rest_done(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.REST_DONE)
+    sm.transition(Event.MANUAL_SUMMON)
+    qtbot.waitUntil(lambda: sm.current_state == State.CAT_SHOW, timeout=500)
+
+
 def test_pause_and_resume(qtbot):
     sm = StateMachine(work_interval_min=50, break_duration_min=5,
                       idle_threshold_sec=5, dismiss_hide_min=1)

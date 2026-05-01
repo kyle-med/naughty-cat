@@ -104,9 +104,11 @@ class StateMachine(QObject):
             self._start_work_timer()
 
         elif event == Event.MANUAL_SUMMON:
-            if state == State.WORKING:
-                self._work_timer.stop()
-                self._set_state(State.CAT_SHOW)
+            self._work_timer.stop()
+            self._break_timer.stop()
+            self._hide_timer.stop()
+            self._break_remaining_ms = None
+            self._set_state(State.CAT_SHOW)
 
     def pause(self):
         self.is_paused = True
