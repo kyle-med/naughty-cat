@@ -36,6 +36,7 @@ class StateMachine(QObject):
 
         self._current_state = State.WORKING
         self.is_paused = False
+        self._break_remaining_ms = None  # saved break progress across dismiss
 
         self._work_timer = QTimer(self)
         self._work_timer.setSingleShot(True)
@@ -72,10 +73,19 @@ class StateMachine(QObject):
 
         elif event == Event.USER_ACTIVE:
             if state == State.RESTING:
+                self._break_remaining_ms = self._break_timer.remainingTime()
                 self._break_timer.stop()
                 self._set_state(State.RESTING_PAUSED)
 
         elif event == Event.DISMISS_CLICKED:
+            if state == State.RESTING:
+                self._break_remaining_ms = self._break_timer.remainingTime()
+                self._break_timer.stop()
+            elif state == State.RESTING_PAUSED:
+                # Remaining time already saved in USER_ACTIVE
+                pass
+            elif state == State.CAT_SHOW:
+                pass
             if state in (State.CAT_SHOW, State.RESTING, State.RESTING_PAUSED):
                 self._break_timer.stop()
                 self._set_state(State.CAT_HIDING)
@@ -85,9 +95,11 @@ class StateMachine(QObject):
             self._set_state(State.CAT_SHOW)
 
         elif event == Event.BREAK_COMPLETE and state == State.RESTING:
+            self._break_remaining_ms = None
             self._set_state(State.REST_DONE)
 
         elif event == Event.USER_ACKNOWLEDGE and state == State.REST_DONE:
+            self._break_remaining_ms = None
             self._set_state(State.WORKING)
             self._start_work_timer()
 
@@ -124,7 +136,9 @@ class StateMachine(QObject):
             self._work_timer.start(self._work_interval_ms)
 
     def _start_break_timer(self):
-        self._break_timer.start(self._break_duration_ms)
+        duration = self._break_remaining_ms or self._break_duration_ms
+        self._break_remaining_ms = None
+        self._break_timer.start(duration)
 
     def _start_hide_timer(self):
         self._hide_timer.start(self._dismiss_hide_ms)
