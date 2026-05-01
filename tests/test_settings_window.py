@@ -2,9 +2,9 @@ from naughty_cat.ui.settings_window import SettingsWindow
 
 
 def test_settings_window_has_four_tabs(qtbot):
-    cats = [{"name": "大橘", "file": "orange_cat.gif", "builtin": True}]
+    cats = [{"name": "波仔", "file": "orange_cat.gif", "builtin": True}]
     settings = {
-        "active_cats": ["大橘"],
+        "active_cats": ["波仔"],
         "cat_count": 2,
         "cat_size": 100,
         "work_interval_min": 50,
@@ -21,9 +21,9 @@ def test_settings_window_has_four_tabs(qtbot):
 
 
 def test_settings_window_returns_updated_settings(qtbot):
-    cats = [{"name": "大橘", "file": "orange_cat.gif", "builtin": True}]
+    cats = [{"name": "波仔", "file": "orange_cat.gif", "builtin": True}]
     settings = {
-        "active_cats": ["大橘"],
+        "active_cats": ["波仔"],
         "cat_count": 2,
         "cat_size": 100,
         "work_interval_min": 50,

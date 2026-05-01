@@ -6,11 +6,11 @@ from typing import Any
 
 DEFAULTS = {
     "cats": [
-        {"name": "大橘", "file": "orange_cat.gif", "builtin": True},
-        {"name": "蓝猫", "file": "blue_cat.gif", "builtin": True},
-        {"name": "三花", "file": "calico_cat.gif", "builtin": True},
+        {"name": "波仔", "file": "波仔.gif", "builtin": True},
+        {"name": "咣当", "file": "咣当.gif", "builtin": True},
+        {"name": "Bender", "file": "Bender.gif", "builtin": True},
     ],
-    "active_cats": ["大橘", "蓝猫", "三花"],
+    "active_cats": ["波仔", "咣当", "Bender"],
     "cat_count": 2,
     "cat_size": 100,
     "work_interval_min": 50,

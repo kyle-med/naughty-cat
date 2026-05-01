@@ -4,10 +4,10 @@ from naughty_cat.ui.cat_config import CatConfigPanel
 
 def test_cat_config_initializes_with_cats(qtbot):
     cats = [
-        {"name": "大橘", "file": "orange_cat.gif", "builtin": True},
+        {"name": "波仔", "file": "orange_cat.gif", "builtin": True},
         {"name": "蓝猫", "file": "blue_cat.gif", "builtin": True},
     ]
-    active = ["大橘"]
+    active = ["波仔"]
     panel = CatConfigPanel(cats, active, count=2, size=100)
     qtbot.addWidget(panel)
 
@@ -16,7 +16,7 @@ def test_cat_config_initializes_with_cats(qtbot):
 
 
 def test_cat_config_import_button_exists(qtbot):
-    cats = [{"name": "大橘", "file": "orange_cat.gif", "builtin": True}]
-    panel = CatConfigPanel(cats, ["大橘"], count=1, size=100)
+    cats = [{"name": "波仔", "file": "orange_cat.gif", "builtin": True}]
+    panel = CatConfigPanel(cats, ["波仔"], count=1, size=100)
     qtbot.addWidget(panel)
     assert panel._import_btn is not None
