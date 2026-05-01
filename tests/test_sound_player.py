@@ -35,4 +35,4 @@ def test_play_does_not_crash_when_disabled(qtbot):
     player = SoundPlayer()
     player.set_enabled(False)
     # Should not raise
-    player.play("meow1.mp3")
+    player.play("meow.mp3")

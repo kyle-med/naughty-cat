@@ -49,7 +49,9 @@ class App:
         self._idle = IdleDetector(
             idle_threshold_sec=self._config.settings["idle_threshold_sec"]
         )
-        self._sound = SoundPlayer()
+        self._sound = SoundPlayer(
+            custom_sounds=self._config.settings.get("custom_sounds", [])
+        )
         self._sound.set_enabled(self._config.settings["sound_enabled"])
         self._sound.set_volume(self._config.settings["sound_volume"])
 
@@ -102,7 +104,7 @@ class App:
                                  if c["name"] in self._config.settings.get("active_cats", [])],
             )
             self._idle.start()
-            self._sound.play("meow1.mp3")
+            self._sound.play("meow.mp3")
 
         elif state == State.RESTING:
             # Cats already on screen from CAT_SHOW, just keep them
@@ -141,6 +143,8 @@ class App:
             for k, v in s.items():
                 self._config.settings[k] = v
             self._config.save()
+            self._sound.set_enabled(self._config.settings["sound_enabled"])
+            self._sound.set_volume(self._config.settings["sound_volume"])
 
     def _show_settings(self):
         if self._settings_win and self._settings_win.isVisible():
@@ -154,6 +158,11 @@ class App:
             for k, v in s.items():
                 self._config.settings[k] = v
             self._config.save()
+            self._sound.set_enabled(self._config.settings["sound_enabled"])
+            self._sound.set_volume(self._config.settings["sound_volume"])
+            self._sound.set_custom_sounds(
+                self._config.settings.get("custom_sounds", [])
+            )
             _apply_auto_start(self._config.settings["auto_start"])
 
     def _show_toast(self):

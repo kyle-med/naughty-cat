@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QSlider, QCheckBox, QPushButton, QSpinBox, QFormLayout, QGroupBox, QWidget,
     QFileDialog
 )
+from pathlib import Path
 from PySide6.QtCore import Qt
 from naughty_cat.ui.cat_config import CatConfigPanel
 from naughty_cat.ui.style import make_slider_row
@@ -62,6 +63,11 @@ class SettingsWindow(QDialog):
         vol_layout.addWidget(self._volume_label)
         sound_layout.addLayout(vol_layout)
 
+        self._imported_sounds = list(settings.get("custom_sounds", []))
+        self._sound_list_label = QLabel()
+        self._update_sound_list_label()
+        sound_layout.addWidget(self._sound_list_label)
+
         self._sound_import_btn = QPushButton("导入自定义音效...")
         self._sound_import_btn.clicked.connect(self._import_sound)
         sound_layout.addWidget(self._sound_import_btn)
@@ -108,6 +114,7 @@ class SettingsWindow(QDialog):
             "dismiss_hide_min": self._dismiss_slider.value(),
             "sound_enabled": self._sound_enabled_cb.isChecked(),
             "sound_volume": self._volume_slider.value(),
+            "custom_sounds": self._imported_sounds,
             "auto_start": self._auto_start_cb.isChecked(),
         }
 
@@ -118,4 +125,13 @@ class SettingsWindow(QDialog):
         )
         if not path:
             return
-        self._imported_sound = path
+        if path not in self._imported_sounds:
+            self._imported_sounds.append(path)
+        self._update_sound_list_label()
+
+    def _update_sound_list_label(self):
+        if self._imported_sounds:
+            names = [Path(p).name for p in self._imported_sounds]
+            self._sound_list_label.setText("已导入: " + ", ".join(names))
+        else:
+            self._sound_list_label.setText("已导入: 无")
