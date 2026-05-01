@@ -12,7 +12,7 @@ class WelcomeWizard(QWizard):
         super().__init__(parent)
         self.setWindowTitle("欢迎使用 Naughty Cat")
         self.setWizardStyle(QWizard.ModernStyle)
-        self.setMinimumSize(480, 420)
+        self.setMinimumSize(440, 480)
 
         if cats is None:
             cats = [

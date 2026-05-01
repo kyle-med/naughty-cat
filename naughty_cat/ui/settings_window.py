@@ -12,7 +12,7 @@ class SettingsWindow(QDialog):
     def __init__(self, cats: list[dict], settings: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Naughty Cat 设置")
-        self.setMinimumSize(440, 400)
+        self.setMinimumSize(480, 460)
 
         layout = QVBoxLayout(self)
         self._tab_widget = QTabWidget()
