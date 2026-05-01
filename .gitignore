@@ -9,3 +9,4 @@ build/
 *.exe
 dist/
 build/
+*.egg-info/
