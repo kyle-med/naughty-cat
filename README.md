@@ -63,30 +63,4 @@ WORKING ──工作计时器到──▶ CAT_SHOW
                             └── 点驱赶 ──▶ CAT_HIDING ──▶ CAT_SHOW
 ```
 
-## 安装
 
-从 [Releases](https://github.com/kyle-med/naughty-cat/releases) 下载 `NaughtyCat-Setup.exe`，双击安装。
-
-## 开发
-
-```bash
-# 克隆
-git clone https://github.com/kyle-med/naughty-cat.git
-cd naughty-cat
-
-# 安装依赖
-pip install -e ".[dev]"
-
-# 运行
-python -m naughty_cat.main
-
-# 测试
-pytest -v
-
-# 打包
-pyinstaller naughty_cat.spec --clean --noconfirm
-```
-
-## License
-
-MIT
