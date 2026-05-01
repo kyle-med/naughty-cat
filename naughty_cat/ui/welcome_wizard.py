@@ -111,7 +111,7 @@ class _TimerPage(QWizardPage):
 
         form = QFormLayout()
 
-        self.work_slider, work_row = make_slider_row(15, 120, 50, "分钟")
+        self.work_slider, work_row = make_slider_row(3, 120, 50, "分钟")
         self.break_slider, break_row = make_slider_row(1, 30, 5, "分钟")
         self.idle_slider, idle_row = make_slider_row(2, 30, 5, "秒")
         self.dismiss_slider, dismiss_row = make_slider_row(1, 30, 1, "分钟")

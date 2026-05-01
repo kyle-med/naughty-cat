@@ -28,7 +28,7 @@ DEFAULTS = {
 RANGES = {
     "cat_count": (1, 10),
     "cat_size": (30, 300),
-    "work_interval_min": (15, 120),
+    "work_interval_min": (3, 120),
     "break_duration_min": (1, 30),
     "idle_threshold_sec": (2, 30),
     "dismiss_hide_min": (1, 30),

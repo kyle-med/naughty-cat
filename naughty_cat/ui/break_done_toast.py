@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 class BreakDoneToast(QWidget):
     acknowledged = Signal()
 
-    def __init__(self, auto_dismiss_ms=30000, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlags(
             Qt.FramelessWindowHint
@@ -53,9 +53,6 @@ class BreakDoneToast(QWidget):
         if screen:
             geo = screen.availableGeometry()
             self.move(geo.right() - 280, geo.bottom() - 130)
-
-        if auto_dismiss_ms > 0:
-            QTimer.singleShot(auto_dismiss_ms, self._on_acknowledge)
 
     def _on_acknowledge(self):
         self.acknowledged.emit()

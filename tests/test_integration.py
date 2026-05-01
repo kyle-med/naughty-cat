@@ -34,5 +34,5 @@ def test_full_workflow_imports(qtbot):
     tray = TrayIcon()
     assert tray is not None
 
-    toast = BreakDoneToast(auto_dismiss_ms=100)
+    toast = BreakDoneToast()
     assert toast is not None

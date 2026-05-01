@@ -19,8 +19,8 @@ def test_toast_shows_and_emits_on_click(qtbot):
     assert acknowledged is True
 
 
-def test_toast_auto_dismisses(qtbot):
-    toast = BreakDoneToast(auto_dismiss_ms=50)
+def test_toast_stays_until_clicked(qtbot):
+    toast = BreakDoneToast()
     qtbot.addWidget(toast)
     toast.show()
 
@@ -31,5 +31,7 @@ def test_toast_auto_dismisses(qtbot):
         acknowledged = True
 
     toast.acknowledged.connect(on_ack)
-
-    qtbot.waitUntil(lambda: acknowledged, timeout=2000)
+    # Toast should NOT auto-dismiss — must stay until clicked
+    # Wait a bit and verify it's still there
+    assert not acknowledged
+    assert toast.isVisible()

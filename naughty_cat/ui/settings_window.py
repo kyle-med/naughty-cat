@@ -31,7 +31,7 @@ class SettingsWindow(QDialog):
         time_tab = QWidget()
         time_layout = QFormLayout(time_tab)
 
-        self._work_slider, work_row = make_slider_row(15, 120, settings.get("work_interval_min", 50), "分钟")
+        self._work_slider, work_row = make_slider_row(3, 120, settings.get("work_interval_min", 50), "分钟")
         self._break_slider, break_row = make_slider_row(1, 30, settings.get("break_duration_min", 5), "分钟")
         self._idle_slider, idle_row = make_slider_row(2, 30, settings.get("idle_threshold_sec", 5), "秒")
         self._dismiss_slider, dismiss_row = make_slider_row(1, 30, settings.get("dismiss_hide_min", 1), "分钟")
