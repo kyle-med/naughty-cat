@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (
     QWizard, QWizardPage, QVBoxLayout, QLabel, QCheckBox,
-    QSlider, QHBoxLayout, QFormLayout, QWidget
+    QFormLayout
 )
-from PySide6.QtCore import Qt
 from naughty_cat.ui.cat_config import CatConfigPanel
+from naughty_cat.ui.style import make_slider_row
 
 
 class WelcomeWizard(QWizard):
@@ -62,30 +62,17 @@ class _TimerPage(QWizardPage):
 
         form = QFormLayout()
 
-        self.work_slider = self._make_slider(15, 120, 50, "分钟")
-        self.break_slider = self._make_slider(1, 30, 5, "分钟")
-        self.idle_slider = self._make_slider(2, 30, 5, "秒")
-        self.dismiss_slider = self._make_slider(1, 30, 1, "分钟")
+        self.work_slider, work_row = make_slider_row(15, 120, 50, "分钟")
+        self.break_slider, break_row = make_slider_row(1, 30, 5, "分钟")
+        self.idle_slider, idle_row = make_slider_row(2, 30, 5, "秒")
+        self.dismiss_slider, dismiss_row = make_slider_row(1, 30, 1, "分钟")
 
-        form.addRow("工作间隔", self.work_slider)
-        form.addRow("休息时长", self.break_slider)
-        form.addRow("空闲检测", self.idle_slider)
-        form.addRow("驱赶隐藏", self.dismiss_slider)
+        form.addRow("工作间隔", work_row)
+        form.addRow("休息时长", break_row)
+        form.addRow("空闲检测", idle_row)
+        form.addRow("驱赶隐藏", dismiss_row)
 
         layout.addLayout(form)
-
-    def _make_slider(self, lo, hi, default, unit):
-        w = QWidget(self)
-        layout = QHBoxLayout(w)
-        layout.setContentsMargins(0, 0, 0, 0)
-        slider = QSlider(Qt.Horizontal)
-        slider.setRange(lo, hi)
-        slider.setValue(default)
-        label = QLabel(f"{default} {unit}")
-        slider.valueChanged.connect(lambda v, l=label, u=unit: l.setText(f"{v} {u}"))
-        layout.addWidget(slider)
-        layout.addWidget(label)
-        return slider
 
 
 class _DonePage(QWizardPage):

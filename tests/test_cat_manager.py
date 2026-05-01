@@ -28,6 +28,11 @@ def test_dismiss_all_hides_windows(qtbot):
 
     manager.dismiss_requested.connect(on_dismiss)
     manager.dismiss_all()
+
+    def check():
+        return dismiss_requested is True
+
+    qtbot.waitUntil(check, timeout=3000)
     assert dismiss_requested is True
 
 

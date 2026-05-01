@@ -5,15 +5,15 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from naughty_cat.ui.cat_config import CatConfigPanel
+from naughty_cat.ui.style import make_slider_row
 
 
 class SettingsWindow(QDialog):
     def __init__(self, cats: list[dict], settings: dict, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Naughty Cat 设置")
-        self.setMinimumSize(420, 380)
+        self.setMinimumSize(440, 400)
 
-        self._slider_wrappers: list[QWidget] = []
         layout = QVBoxLayout(self)
         self._tab_widget = QTabWidget()
         layout.addWidget(self._tab_widget)
@@ -30,15 +30,15 @@ class SettingsWindow(QDialog):
         time_tab = QWidget()
         time_layout = QFormLayout(time_tab)
 
-        self._work_slider = self._make_slider(15, 120, settings.get("work_interval_min", 50), "分钟")
-        self._break_slider = self._make_slider(1, 30, settings.get("break_duration_min", 5), "分钟")
-        self._idle_slider = self._make_slider(2, 30, settings.get("idle_threshold_sec", 5), "秒")
-        self._dismiss_slider = self._make_slider(1, 30, settings.get("dismiss_hide_min", 1), "分钟")
+        self._work_slider, work_row = make_slider_row(15, 120, settings.get("work_interval_min", 50), "分钟")
+        self._break_slider, break_row = make_slider_row(1, 30, settings.get("break_duration_min", 5), "分钟")
+        self._idle_slider, idle_row = make_slider_row(2, 30, settings.get("idle_threshold_sec", 5), "秒")
+        self._dismiss_slider, dismiss_row = make_slider_row(1, 30, settings.get("dismiss_hide_min", 1), "分钟")
 
-        time_layout.addRow("工作间隔", self._work_slider)
-        time_layout.addRow("休息时长", self._break_slider)
-        time_layout.addRow("空闲检测", self._idle_slider)
-        time_layout.addRow("驱赶隐藏", self._dismiss_slider)
+        time_layout.addRow("工作间隔", work_row)
+        time_layout.addRow("休息时长", break_row)
+        time_layout.addRow("空闲检测", idle_row)
+        time_layout.addRow("驱赶隐藏", dismiss_row)
         self._tab_widget.addTab(time_tab, "⏰ 时间")
 
         # Tab 3: Sound
@@ -119,17 +119,3 @@ class SettingsWindow(QDialog):
         if not path:
             return
         self._imported_sound = path
-
-    def _make_slider(self, lo, hi, default, unit):
-        w = QWidget()
-        layout = QHBoxLayout(w)
-        layout.setContentsMargins(0, 0, 0, 0)
-        slider = QSlider(Qt.Horizontal)
-        slider.setRange(lo, hi)
-        slider.setValue(default)
-        label = QLabel(f"{default} {unit}")
-        slider.valueChanged.connect(lambda v, l=label, u=unit: l.setText(f"{v} {u}"))
-        layout.addWidget(slider)
-        layout.addWidget(label)
-        self._slider_wrappers.append(w)
-        return slider

@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton, QApplication
+    QWidget, QVBoxLayout, QLabel, QPushButton, QApplication,
+    QGraphicsDropShadowEffect,
 )
 
 
@@ -16,48 +18,41 @@ class BreakDoneToast(QWidget):
             | Qt.SubWindow
         )
         self.setAttribute(Qt.WA_ShowWithoutActivating)
-        self.setFixedSize(240, 100)
+        self.setFixedSize(260, 120)
 
         self.setStyleSheet("""
-            QWidget {
-                background: #2d2d3f;
-                border: 1px solid #f0a040;
-                border-radius: 12px;
-            }
-            QLabel {
-                color: #ffffff;
-                font-size: 14px;
-            }
-            QPushButton {
-                background: #f0a040;
-                border: none;
-                border-radius: 6px;
-                padding: 4px 16px;
-                color: #1a1a2e;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background: #f5b850;
+            BreakDoneToast {
+                background: #FFFFFF;
+                border: 1px solid rgba(0,0,0,0.06);
+                border-radius: 16px;
             }
         """)
 
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(24)
+        shadow.setOffset(0, 6)
+        shadow.setColor(QColor(0, 0, 0, 30))
+        self.setGraphicsEffect(shadow)
+
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(10)
 
-        label = QLabel("猫咪出去玩了！\U0001f431")
+        label = QLabel("猫咪出去玩了！🐱")
         label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet(
+            "font-size: 14px; font-weight: 500; color: #1C1C1E; border: none;"
+        )
         layout.addWidget(label)
 
         self._btn = QPushButton("知道了")
         self._btn.clicked.connect(self._on_acknowledge)
         layout.addWidget(self._btn, alignment=Qt.AlignCenter)
 
-        # Position bottom-right
         screen = QApplication.primaryScreen()
         if screen:
             geo = screen.availableGeometry()
-            self.move(geo.right() - 260, geo.bottom() - 120)
+            self.move(geo.right() - 280, geo.bottom() - 130)
 
         if auto_dismiss_ms > 0:
             QTimer.singleShot(auto_dismiss_ms, self._on_acknowledge)

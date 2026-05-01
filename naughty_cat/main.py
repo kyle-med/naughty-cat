@@ -13,6 +13,7 @@ from naughty_cat.tray_icon import TrayIcon
 from naughty_cat.ui.welcome_wizard import WelcomeWizard
 from naughty_cat.ui.settings_window import SettingsWindow
 from naughty_cat.ui.break_done_toast import BreakDoneToast
+from naughty_cat.ui.style import APP_STYLESHEET
 
 
 def _config_path() -> Path:
@@ -171,6 +172,12 @@ class App:
 def main():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
+    app.setStyle("Fusion")
+    app.setStyleSheet(APP_STYLESHEET)
+    font = app.font()
+    font.setFamily("Segoe UI")
+    font.setPointSize(10)
+    app.setFont(font)
     naughty = App()
     naughty.start()
     sys.exit(app.exec())
