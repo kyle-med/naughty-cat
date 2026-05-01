@@ -23,13 +23,22 @@ class CatConfigPanel(QWidget):
         # Cat selection
         cat_group = QGroupBox("选择猫咪")
         cat_layout = QVBoxLayout(cat_group)
+        cat_layout.setSpacing(10)
 
         for cat in cats:
+            row = QWidget()
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 2, 0, 2)
+            row_layout.setSpacing(8)
+
             cb = QCheckBox(cat["name"])
             cb.setChecked(cat["name"] in active_names)
+            cb.setStyleSheet("font-size: 15px; padding: 6px 0;")
             cb.toggled.connect(self._on_selection_changed)
             self._checkboxes[cat["name"]] = cb
-            cat_layout.addWidget(cb)
+            row_layout.addWidget(cb)
+            row_layout.addStretch()
+            cat_layout.addWidget(row)
 
         self._import_btn = QPushButton("导入猫咪 (GIF/APNG)...")
         self._import_btn.clicked.connect(self._import_cat)

@@ -1,0 +1,10 @@
+pyproject.toml
+naughty_cat/__init__.py
+naughty_cat.egg-info/PKG-INFO
+naughty_cat.egg-info/SOURCES.txt
+naughty_cat.egg-info/dependency_links.txt
+naughty_cat.egg-info/entry_points.txt
+naughty_cat.egg-info/requires.txt
+naughty_cat.egg-info/top_level.txt
+naughty_cat/ui/__init__.py
+tests/test_config_store.py

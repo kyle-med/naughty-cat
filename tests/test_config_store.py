@@ -10,7 +10,7 @@ def test_defaults_on_no_file():
     assert store.settings["work_interval_min"] == 50
     assert store.settings["break_duration_min"] == 5
     assert store.settings["first_run"] is True
-    assert len(store.settings["cats"]) == 3
+    assert len(store.settings["cats"]) == 4
 
 
 def test_loads_existing_file():

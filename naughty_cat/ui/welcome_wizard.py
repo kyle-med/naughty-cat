@@ -19,6 +19,7 @@ class WelcomeWizard(QWizard):
                 {"name": "波仔", "file": "波仔.gif", "builtin": True},
                 {"name": "咣当", "file": "咣当.gif", "builtin": True},
                 {"name": "Bender", "file": "Bender.gif", "builtin": True},
+                {"name": "胖虎（不过已经去喵星了TuT）", "file": "胖虎.gif", "builtin": True},
             ]
 
         self._intro_page = _WelcomePage()
@@ -58,7 +59,7 @@ class _WelcomePage(QWizardPage):
             "\U0001F4A1 设计初衷\n"
             "长时间工作会损害你的身体和注意力。"
             "Naughty Cat 帮你定时休息，"
-            "让可爱的小猫咚来提醒你该走动一下了。"
+            "让可爱的小猫咪来提醒你该走动一下了。"
         )
         why.setWordWrap(True)
         why.setStyleSheet("font-size: 14px; color: #1C1C1E; line-height: 1.6;")
