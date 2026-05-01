@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (
     QDialog, QTabWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QSlider, QCheckBox, QPushButton, QSpinBox, QFormLayout, QGroupBox, QWidget
+    QSlider, QCheckBox, QPushButton, QSpinBox, QFormLayout, QGroupBox, QWidget,
+    QFileDialog
 )
 from PySide6.QtCore import Qt
 from naughty_cat.ui.cat_config import CatConfigPanel
@@ -61,8 +62,9 @@ class SettingsWindow(QDialog):
         vol_layout.addWidget(self._volume_label)
         sound_layout.addLayout(vol_layout)
 
-        import_btn = QPushButton("导入自定义音效...")
-        sound_layout.addWidget(import_btn)
+        self._sound_import_btn = QPushButton("导入自定义音效...")
+        self._sound_import_btn.clicked.connect(self._import_sound)
+        sound_layout.addWidget(self._sound_import_btn)
         sound_layout.addStretch()
         self._tab_widget.addTab(sound_tab, "🔊 音效")
 
@@ -108,6 +110,15 @@ class SettingsWindow(QDialog):
             "sound_volume": self._volume_slider.value(),
             "auto_start": self._auto_start_cb.isChecked(),
         }
+
+    def _import_sound(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "导入音效", "",
+            "Audio (*.mp3 *.wav *.ogg *.m4a);;All Files (*)"
+        )
+        if not path:
+            return
+        self._imported_sound = path
 
     def _make_slider(self, lo, hi, default, unit):
         w = QWidget()

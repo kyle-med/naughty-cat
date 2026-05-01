@@ -32,6 +32,7 @@ class CatConfigPanel(QWidget):
             cat_layout.addWidget(cb)
 
         self._import_btn = QPushButton("导入猫咪 (GIF/APNG)...")
+        self._import_btn.clicked.connect(self._import_cat)
         cat_layout.addWidget(self._import_btn)
 
         layout.addWidget(cat_group)
@@ -72,6 +73,28 @@ class CatConfigPanel(QWidget):
 
     def get_cat_size(self) -> int:
         return self.cat_size_slider.value()
+
+    def _import_cat(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "导入猫咪", "",
+            "Images (*.gif *.apng *.png);;All Files (*)"
+        )
+        if not path:
+            return
+        from pathlib import Path
+        name = Path(path).stem
+        self._cats.append({"name": name, "file": path, "builtin": False})
+        cb = QCheckBox(name)
+        cb.setChecked(True)
+        cb.toggled.connect(self._on_selection_changed)
+        self._checkboxes[name] = cb
+        # Insert before the import button
+        cat_layout = self._import_btn.parent().layout()
+        if cat_layout:
+            cat_layout.insertWidget(cat_layout.count() - 1, cb)
+
+    def get_cats(self) -> list[dict]:
+        return self._cats
 
     def _on_selection_changed(self):
         pass

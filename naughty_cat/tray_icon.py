@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
+from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QStyle, QSystemTrayIcon
 
 
 _ICONS_DIR = Path(__file__).parent / "assets" / "icons"
@@ -46,6 +46,7 @@ class TrayIcon(QSystemTrayIcon):
         self._menu.addAction(self._settings_action)
 
         self._about_action = QAction("关于")
+        self._about_action.triggered.connect(self._show_about)
         self._menu.addAction(self._about_action)
 
         self._menu.addSeparator()
@@ -73,6 +74,16 @@ class TrayIcon(QSystemTrayIcon):
             self._pause_action.setText("暂停提醒")
             if normal_icon.exists():
                 self.setIcon(QIcon(str(normal_icon)))
+
+    def _show_about(self):
+        QMessageBox.about(
+            None,
+            "关于 Naughty Cat",
+            "Naughty Cat v0.1.0\n\n"
+            "一个用猫咪提醒你休息的小工具。\n\n"
+            "猫咪会在工作时长到后出现在屏幕上玩耍，\n"
+            "提醒你该休息了。",
+        )
 
     def _on_pause_toggle(self):
         self._is_paused = not self._is_paused
