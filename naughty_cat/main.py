@@ -1,8 +1,11 @@
 import sys
 import os
+import ctypes
+from ctypes import wintypes
 from pathlib import Path
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QObject, Signal
+from PySide6.QtCore import QAbstractNativeEventFilter
 
 from naughty_cat.config_store import ConfigStore
 from naughty_cat.idle_detector import IdleDetector
@@ -14,6 +17,27 @@ from naughty_cat.ui.welcome_wizard import WelcomeWizard
 from naughty_cat.ui.settings_window import SettingsWindow
 from naughty_cat.ui.break_done_toast import BreakDoneToast
 from naughty_cat.ui.style import APP_STYLESHEET
+
+WM_POWERBROADCAST = 0x0218
+PBT_APMSUSPEND = 0x0004
+PBT_APMRESUMESUSPEND = 0x0007
+
+
+class _WinPowerFilter(QObject, QAbstractNativeEventFilter):
+    suspend = Signal()
+    resume = Signal()
+
+    def nativeEventFilter(self, event_type, message):
+        if event_type == b"windows_generic_MSG":
+            msg = ctypes.cast(
+                ctypes.c_void_p(int(message)), ctypes.POINTER(wintypes.MSG)
+            ).contents
+            if msg.message == WM_POWERBROADCAST:
+                if msg.wParam == PBT_APMSUSPEND:
+                    self.suspend.emit()
+                elif msg.wParam == PBT_APMRESUMESUSPEND:
+                    self.resume.emit()
+        return False, 0
 
 
 def _config_path() -> Path:
@@ -66,6 +90,8 @@ class App:
         self._settings_win = None
         self._toast = None
 
+        self._power_filter = _WinPowerFilter()
+
         self._wire()
 
     def _wire(self):
@@ -85,11 +111,20 @@ class App:
         self._tray.settings_requested.connect(self._show_settings)
         self._tray.quit_requested.connect(self._quit)
 
+        # Lid close / open → auto pause / resume
+        self._power_filter.suspend.connect(
+            lambda: self._state.pause() if not self._state.is_paused else None
+        )
+        self._power_filter.resume.connect(
+            lambda: self._state.resume() if self._state.is_paused else None
+        )
+
     def start(self):
         if self._config.settings["first_run"]:
             self._show_wizard()
 
         _apply_auto_start(self._config.settings["auto_start"])
+        QApplication.instance().installNativeEventFilter(self._power_filter)
         self._tray.show()
         self._state.start()
 
@@ -136,6 +171,13 @@ class App:
         else:
             self._state.resume()
 
+    def _on_pause_button_toggle(self):
+        if self._state.is_paused:
+            self._state.resume()
+        else:
+            self._state.pause()
+        self._tray.set_paused(self._state.is_paused)
+
     def _show_wizard(self):
         wizard = WelcomeWizard(self._config.settings["cats"])
         if wizard.exec() == WelcomeWizard.Accepted:
@@ -162,6 +204,8 @@ class App:
             self._config.settings["cats"],
             self._config.settings,
             timer_info_cb=self._state.timer_info,
+            is_paused_cb=lambda: self._state.is_paused,
+            toggle_pause_cb=self._on_pause_button_toggle,
         )
         if self._settings_win.exec() == SettingsWindow.Accepted:
             s = self._settings_win.get_settings()

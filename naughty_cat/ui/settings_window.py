@@ -12,12 +12,14 @@ from naughty_cat.state_machine import State
 
 class SettingsWindow(QDialog):
     def __init__(self, cats: list[dict], settings: dict, timer_info_cb=None,
-                 parent=None):
+                 is_paused_cb=None, toggle_pause_cb=None, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Naughty Cat 设置")
         self.setMinimumSize(480, 460)
 
         self._timer_info_cb = timer_info_cb
+        self._is_paused_cb = is_paused_cb
+        self._toggle_pause_cb = toggle_pause_cb
 
         layout = QVBoxLayout(self)
         self._tab_widget = QTabWidget()
@@ -54,6 +56,13 @@ class SettingsWindow(QDialog):
         form_layout.addRow("空闲检测", idle_row)
         form_layout.addRow("驱赶隐藏", dismiss_row)
         time_layout.addLayout(form_layout)
+
+        # Pause / Resume button
+        self._pause_btn = QPushButton()
+        self._pause_btn.setFixedHeight(32)
+        self._pause_btn.clicked.connect(self._on_pause_clicked)
+        time_layout.addWidget(self._pause_btn)
+        time_layout.addStretch()
         self._tab_widget.addTab(time_tab, "⏰ 时间")
 
         # Tab 3: Sound
@@ -119,7 +128,7 @@ class SettingsWindow(QDialog):
 
         # Start poll timer if callback provided
         self._poll_timer = None
-        if self._timer_info_cb:
+        if self._timer_info_cb or self._is_paused_cb:
             self._refresh_timer_display()
             self._poll_timer = QTimer(self)
             self._poll_timer.setInterval(1000)
@@ -147,46 +156,32 @@ class SettingsWindow(QDialog):
         card.setStyleSheet("""
             QFrame#timerStatusCard {
                 background: #3d3d5c;
-                border-radius: 10px;
-                padding: 12px 16px;
+                border-radius: 6px;
             }
         """)
-        card_layout = QHBoxLayout(card)
-        card_layout.setContentsMargins(14, 10, 14, 10)
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(10, 5, 10, 5)
+        layout.setSpacing(3)
 
-        self._timer_emoji = QLabel()
-        self._timer_emoji.setStyleSheet("font-size: 28px;")
-        card_layout.addWidget(self._timer_emoji)
+        self._timer_text = QLabel()
+        self._timer_text.setStyleSheet("font-size: 12px; font-weight: bold;")
+        layout.addWidget(self._timer_text)
 
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
-
-        self._timer_state_label = QLabel()
-        self._timer_state_label.setStyleSheet("color: #888; font-size: 11px;")
-        info_layout.addWidget(self._timer_state_label)
-
-        self._timer_countdown = QLabel()
-        self._timer_countdown.setStyleSheet("font-size: 16px; font-weight: bold;")
-        info_layout.addWidget(self._timer_countdown)
-
-        # Progress bar
         self._timer_progress_bg = QWidget()
-        self._timer_progress_bg.setFixedHeight(6)
+        self._timer_progress_bg.setFixedHeight(3)
         self._timer_progress_bg.setStyleSheet(
-            "background: #2a2a3f; border-radius: 3px;")
+            "background: #2a2a3f; border-radius: 1px;")
         self._timer_progress_fill = QWidget(self._timer_progress_bg)
-        self._timer_progress_fill.setFixedHeight(6)
+        self._timer_progress_fill.setFixedHeight(3)
         self._timer_progress_fill.setStyleSheet(
-            "background: #f0a040; border-radius: 3px;")
+            "background: #f0a040; border-radius: 1px;")
+        layout.addWidget(self._timer_progress_bg)
 
-        info_layout.addWidget(self._timer_progress_bg)
-
-        info_layout.addStretch()
-        card_layout.addLayout(info_layout, 1)
         card.setVisible(False)
         return card
 
     def _refresh_timer_display(self):
+        self._update_pause_button()
         if not self._timer_info_cb:
             return
         info = self._timer_info_cb()
@@ -198,55 +193,46 @@ class SettingsWindow(QDialog):
 
         if state == State.WORKING:
             remaining_min = remaining_ms / 60000
-            self._timer_emoji.setText("🐱")
-            self._timer_state_label.setText("当前状态 · 工作中")
-            self._timer_countdown.setText(
-                f"猫咪还有 {remaining_min:.0f} 分钟过来玩")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #f0a040;")
+            self._timer_text.setText(
+                f"\U0001F431 工作中 · 猫咪还有 {remaining_min:.0f} 分钟过来玩")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #f0a040;")
             self._timer_progress_fill.setStyleSheet(
-                "background: #f0a040; border-radius: 3px;")
+                "background: #f0a040; border-radius: 1px;")
         elif state == State.CAT_SHOW:
-            self._timer_emoji.setText("😺")
-            self._timer_state_label.setText("当前状态 · 猫咪出现了！")
-            self._timer_countdown.setText("正在等待你休息...")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #f5b860;")
+            self._timer_text.setText(
+                "\U0001F63A 猫咪出现了！正在等待你休息...")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #f5b860;")
             progress = 0.0
         elif state == State.RESTING:
             remaining_min = remaining_ms / 60000
-            self._timer_emoji.setText("😴")
-            self._timer_state_label.setText("当前状态 · 休息中")
-            self._timer_countdown.setText(
-                f"还剩 {remaining_min:.0f} 分钟")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #5cba80;")
+            self._timer_text.setText(
+                f"\U0001F634 休息中 · 还剩 {remaining_min:.0f} 分钟")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #5cba80;")
             self._timer_progress_fill.setStyleSheet(
-                "background: #5cba80; border-radius: 3px;")
+                "background: #5cba80; border-radius: 1px;")
         elif state == State.RESTING_PAUSED:
-            self._timer_emoji.setText("🙀")
-            self._timer_state_label.setText("当前状态 · 休息暂停")
-            self._timer_countdown.setText("检测到活动，休息计时暂停中...")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #d0a050;")
+            self._timer_text.setText(
+                "\U0001F640 休息暂停 · 检测到活动，停止操作后自动恢复...")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #d0a050;")
             self._timer_progress_fill.setStyleSheet(
-                "background: #d0a050; border-radius: 3px;")
+                "background: #d0a050; border-radius: 1px;")
         elif state == State.CAT_HIDING:
             remaining_sec = remaining_ms / 1000
-            self._timer_emoji.setText("🙈")
-            self._timer_state_label.setText("当前状态 · 猫藏起来了")
-            self._timer_countdown.setText(
-                f"猫咪 {remaining_sec:.0f} 秒后再次出现")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #d08060;")
+            self._timer_text.setText(
+                f"\U0001F648 猫藏起来了 · {remaining_sec:.0f} 秒后再次出现")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #d08060;")
             self._timer_progress_fill.setStyleSheet(
-                "background: #d08060; border-radius: 3px;")
+                "background: #d08060; border-radius: 1px;")
         elif state == State.REST_DONE:
-            self._timer_emoji.setText("✅")
-            self._timer_state_label.setText("当前状态 · 休息完成！")
-            self._timer_countdown.setText("点击「知道了」继续工作")
-            self._timer_countdown.setStyleSheet(
-                "font-size: 16px; font-weight: bold; color: #5cb85c;")
+            self._timer_text.setText(
+                "✅ 休息完成！点击「知道了」继续工作")
+            self._timer_text.setStyleSheet(
+                "font-size: 12px; font-weight: bold; color: #5cb85c;")
             progress = 0.0
         else:
             self._timer_status_card.setVisible(False)
@@ -256,6 +242,26 @@ class SettingsWindow(QDialog):
         bg_width = self._timer_progress_bg.width()
         if bg_width > 0:
             self._timer_progress_fill.setFixedWidth(int(bg_width * progress))
+
+    def _on_pause_clicked(self):
+        if self._toggle_pause_cb:
+            self._toggle_pause_cb()
+
+    def _update_pause_button(self):
+        if self._is_paused_cb:
+            paused = self._is_paused_cb()
+            if paused:
+                self._pause_btn.setText("▶ 继续工作")
+                self._pause_btn.setStyleSheet(
+                    "QPushButton { background: #5cba80; color: #fff; "
+                    "border: none; border-radius: 4px; font-size: 13px; }"
+                    "QPushButton:hover { background: #6dca90; }")
+            else:
+                self._pause_btn.setText("⏸ 暂停工作")
+                self._pause_btn.setStyleSheet(
+                    "QPushButton { background: #d08060; color: #fff; "
+                    "border: none; border-radius: 4px; font-size: 13px; }"
+                    "QPushButton:hover { background: #e09070; }")
 
     def _import_sound(self):
         path, _ = QFileDialog.getOpenFileName(

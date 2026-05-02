@@ -1,3 +1,4 @@
+import time
 from enum import Enum, auto
 from PySide6.QtCore import QObject, QTimer, Signal
 
@@ -37,6 +38,8 @@ class StateMachine(QObject):
         self._current_state = State.WORKING
         self.is_paused = False
         self._break_remaining_ms = None  # saved break progress across dismiss
+        self._paused_remaining_ms = None  # saved work remaining across pause
+        self._work_deadline = None  # monotonic deadline for display sync
 
         self._work_timer = QTimer(self)
         self._work_timer.setSingleShot(True)
@@ -112,12 +115,20 @@ class StateMachine(QObject):
 
     def pause(self):
         self.is_paused = True
+        if self._work_timer.isActive() and self._work_deadline is not None:
+            self._paused_remaining_ms = max(0, int(
+                (self._work_deadline - time.monotonic()) * 1000))
         self._work_timer.stop()
         self.paused_changed.emit(True)
 
     def resume(self):
         self.is_paused = False
-        self._start_work_timer()
+        if self._paused_remaining_ms is not None:
+            self._work_deadline = time.monotonic() + self._paused_remaining_ms / 1000.0
+            self._work_timer.start(self._paused_remaining_ms)
+            self._paused_remaining_ms = None
+        else:
+            self._start_work_timer()
         self.paused_changed.emit(False)
 
     def update_intervals(self, work_interval_min, break_duration_min,
@@ -131,6 +142,7 @@ class StateMachine(QObject):
             remaining = self._work_timer.remainingTime()
             elapsed = old_work_ms - remaining
             new_remaining = max(0, self._work_interval_ms - elapsed)
+            self._work_deadline = time.monotonic() + new_remaining / 1000.0
             self._work_timer.start(new_remaining)
 
     def timer_info(self) -> dict:
@@ -140,7 +152,12 @@ class StateMachine(QObject):
             "total_ms": None,
         }
         if self._current_state == State.WORKING and self._work_timer.isActive():
-            info["remaining_ms"] = self._work_timer.remainingTime()
+            if self._work_deadline is not None:
+                remaining_ms = max(0, int(
+                    (self._work_deadline - time.monotonic()) * 1000))
+            else:
+                remaining_ms = self._work_timer.remainingTime()
+            info["remaining_ms"] = remaining_ms
             info["total_ms"] = self._work_interval_ms
         elif self._current_state == State.RESTING and self._break_timer.isActive():
             info["remaining_ms"] = self._break_timer.remainingTime()
@@ -168,6 +185,7 @@ class StateMachine(QObject):
 
     def _start_work_timer(self):
         if not self.is_paused:
+            self._work_deadline = time.monotonic() + self._work_interval_ms / 1000.0
             self._work_timer.start(self._work_interval_ms)
 
     def _start_break_timer(self):
