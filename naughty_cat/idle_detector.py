@@ -40,6 +40,9 @@ class IdleDetector(QObject):
     def stop(self):
         self._timer.stop()
 
+    def update_threshold(self, idle_threshold_sec: float):
+        self._idle_threshold = idle_threshold_sec
+
     def _tick(self):
         secs = _get_idle_seconds()
         self.idle_seconds_changed.emit(secs)

@@ -55,3 +55,10 @@ def test_idle_detector_emits_became_idle(qtbot):
     detector.start()
 
     qtbot.waitUntil(lambda: became_idle_called, timeout=3000)
+
+
+def test_update_threshold():
+    detector = IdleDetector(idle_threshold_sec=5)
+    assert detector._idle_threshold == 5
+    detector.update_threshold(10)
+    assert detector._idle_threshold == 10
