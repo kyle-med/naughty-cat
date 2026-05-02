@@ -205,3 +205,66 @@ def test_update_intervals_when_idle_does_not_restart_timer(qtbot):
     assert sm._work_interval_ms == 30 * 60 * 1000
     assert sm._break_duration_ms == 10 * 60 * 1000
     assert sm._dismiss_hide_ms == 3 * 60 * 1000
+
+
+def test_timer_info_while_working(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.WORKING)
+    sm._start_work_timer()
+    info = sm.timer_info()
+    assert info["state"] == State.WORKING
+    assert info["remaining_ms"] is not None
+    assert info["total_ms"] == 50 * 60 * 1000
+
+
+def test_timer_info_while_resting(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.RESTING)
+    sm._start_break_timer()
+    info = sm.timer_info()
+    assert info["state"] == State.RESTING
+    assert info["remaining_ms"] is not None
+    assert info["total_ms"] == 5 * 60 * 1000
+
+
+def test_timer_info_while_hiding(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.CAT_HIDING)
+    sm._start_hide_timer()
+    info = sm.timer_info()
+    assert info["state"] == State.CAT_HIDING
+    assert info["remaining_ms"] is not None
+    assert info["total_ms"] == 1 * 60 * 1000
+
+
+def test_timer_info_resting_paused(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.RESTING_PAUSED)
+    info = sm.timer_info()
+    assert info["state"] == State.RESTING_PAUSED
+    assert info["remaining_ms"] is not None
+    assert info["total_ms"] == 5 * 60 * 1000
+
+
+def test_timer_info_resting_paused_with_saved_remaining(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    sm._force_state(State.RESTING_PAUSED)
+    sm._break_remaining_ms = 30000
+    info = sm.timer_info()
+    assert info["remaining_ms"] == 30000
+
+
+def test_timer_info_no_timer_states(qtbot):
+    sm = StateMachine(work_interval_min=50, break_duration_min=5,
+                      idle_threshold_sec=5, dismiss_hide_min=1)
+    for state in [State.CAT_SHOW, State.REST_DONE]:
+        sm._force_state(state)
+        info = sm.timer_info()
+        assert info["state"] == state
+        assert info["remaining_ms"] is None
+        assert info["total_ms"] is None

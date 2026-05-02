@@ -133,6 +133,26 @@ class StateMachine(QObject):
             new_remaining = max(0, self._work_interval_ms - elapsed)
             self._work_timer.start(new_remaining)
 
+    def timer_info(self) -> dict:
+        info = {
+            "state": self._current_state,
+            "remaining_ms": None,
+            "total_ms": None,
+        }
+        if self._current_state == State.WORKING and self._work_timer.isActive():
+            info["remaining_ms"] = self._work_timer.remainingTime()
+            info["total_ms"] = self._work_interval_ms
+        elif self._current_state == State.RESTING and self._break_timer.isActive():
+            info["remaining_ms"] = self._break_timer.remainingTime()
+            info["total_ms"] = self._break_duration_ms
+        elif self._current_state == State.RESTING_PAUSED:
+            info["remaining_ms"] = self._break_remaining_ms or self._break_duration_ms
+            info["total_ms"] = self._break_duration_ms
+        elif self._current_state == State.CAT_HIDING and self._hide_timer.isActive():
+            info["remaining_ms"] = self._hide_timer.remainingTime()
+            info["total_ms"] = self._dismiss_hide_ms
+        return info
+
     # --- internal ---
 
     def _force_state(self, state: State):
