@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QDialog, QTabWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QSlider, QCheckBox, QPushButton, QSpinBox, QFormLayout, QGroupBox, QWidget,
+    QSlider, QCheckBox, QPushButton, QFormLayout, QGroupBox, QWidget,
     QFileDialog, QFrame
 )
 from pathlib import Path
