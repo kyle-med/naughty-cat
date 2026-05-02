@@ -100,7 +100,3 @@ pyinstaller naughty_cat.spec --clean --noconfirm
 # 构建安装程序（需要 NSIS）
 makensis installer.nsi
 ```
-
-## License
-
-MIT
