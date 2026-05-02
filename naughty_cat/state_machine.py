@@ -151,6 +151,10 @@ class StateMachine(QObject):
             "remaining_ms": None,
             "total_ms": None,
         }
+        # TODO: progress bar still drifts on Modern Standby (S0) because
+        # time.monotonic() may not pause on all hardware. QTimer fires
+        # correctly but remainingTime() runs ahead. Needs a robust
+        # per-platform clock or RegisterSuspendResumeNotification.
         if self._current_state == State.WORKING and self._work_timer.isActive():
             if self._work_deadline is not None:
                 remaining_ms = max(0, int(
