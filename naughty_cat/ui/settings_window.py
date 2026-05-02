@@ -190,15 +190,11 @@ class SettingsWindow(QDialog):
         if not self._timer_info_cb:
             return
         info = self._timer_info_cb()
-        if info["remaining_ms"] is None:
-            self._timer_status_card.setVisible(False)
-            return
-
         self._timer_status_card.setVisible(True)
         state = info["state"]
         remaining_ms = info["remaining_ms"]
         total_ms = info["total_ms"]
-        progress = max(0.0, min(1.0, 1.0 - remaining_ms / total_ms)) if total_ms else 0.0
+        progress = max(0.0, min(1.0, 1.0 - remaining_ms / total_ms)) if remaining_ms is not None and total_ms else 0.0
 
         if state == State.WORKING:
             remaining_min = remaining_ms / 60000
