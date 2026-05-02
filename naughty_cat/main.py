@@ -145,13 +145,23 @@ class App:
             self._config.save()
             self._sound.set_enabled(self._config.settings["sound_enabled"])
             self._sound.set_volume(self._config.settings["sound_volume"])
+            self._state.update_intervals(
+                work_interval_min=self._config.settings["work_interval_min"],
+                break_duration_min=self._config.settings["break_duration_min"],
+                dismiss_hide_min=self._config.settings["dismiss_hide_min"],
+            )
+            self._idle.update_threshold(
+                self._config.settings["idle_threshold_sec"]
+            )
 
     def _show_settings(self):
         if self._settings_win and self._settings_win.isVisible():
             self._settings_win.raise_()
             return
         self._settings_win = SettingsWindow(
-            self._config.settings["cats"], self._config.settings
+            self._config.settings["cats"],
+            self._config.settings,
+            timer_info_cb=self._state.timer_info,
         )
         if self._settings_win.exec() == SettingsWindow.Accepted:
             s = self._settings_win.get_settings()
@@ -162,6 +172,14 @@ class App:
             self._sound.set_volume(self._config.settings["sound_volume"])
             self._sound.set_custom_sounds(
                 self._config.settings.get("custom_sounds", [])
+            )
+            self._state.update_intervals(
+                work_interval_min=self._config.settings["work_interval_min"],
+                break_duration_min=self._config.settings["break_duration_min"],
+                dismiss_hide_min=self._config.settings["dismiss_hide_min"],
+            )
+            self._idle.update_threshold(
+                self._config.settings["idle_threshold_sec"]
             )
             _apply_auto_start(self._config.settings["auto_start"])
 
