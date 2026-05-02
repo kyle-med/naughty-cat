@@ -120,6 +120,19 @@ class StateMachine(QObject):
         self._start_work_timer()
         self.paused_changed.emit(False)
 
+    def update_intervals(self, work_interval_min, break_duration_min,
+                         dismiss_hide_min):
+        old_work_ms = self._work_interval_ms
+        self._work_interval_ms = int(work_interval_min * 60 * 1000)
+        self._break_duration_ms = int(break_duration_min * 60 * 1000)
+        self._dismiss_hide_ms = int(dismiss_hide_min * 60 * 1000)
+
+        if self._current_state == State.WORKING and self._work_timer.isActive():
+            remaining = self._work_timer.remainingTime()
+            elapsed = old_work_ms - remaining
+            new_remaining = max(0, self._work_interval_ms - elapsed)
+            self._work_timer.start(new_remaining)
+
     # --- internal ---
 
     def _force_state(self, state: State):
